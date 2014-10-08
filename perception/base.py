@@ -6,16 +6,13 @@ class BasePerception(object):
         self.height = height
 
     def _convert_pixel(self, pixel):
-        return sum(pixel) / 3
+        return pixel[0]
 
-
-    def _convert_line(self, line):
-        average = sum(line) / self.width / self.height
-        return [p > average for p in line]
+    def _get_converter(self, line):
+        return lambda pixel: self._convert_pixel(pixel)
 
     def get_hash(self, image_path):
         image = Image.open(image_path)
         small_image = image.resize((self.width, self.height), Image.ANTIALIAS)
-        line = [self._convert_pixel(small_image.getpixel((x, y))) \
-                                    for x in range(self.width) for y in range(self.height)]
-        return self._convert_line(line)
+        line = [small_image.getpixel((x, y)) for x in range(self.width) for y in range(self.height)]
+        return map(self._get_converter(line), line)
