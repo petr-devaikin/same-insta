@@ -1,4 +1,4 @@
-from perception.base_perception import BasePerception
+from perception.base import BasePerception
 
 def simple_perception(file_name):
     width = 8
