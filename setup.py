@@ -9,5 +9,6 @@ setup(
     author_email='p.devaikin@gmail.com',
     include_package_data=True,
     zip_safe=False,
-    install_requires=['python-instagram', 'Pillow']
+    setup_requires=['Flask'],
+    install_requires=['Flask', 'python-instagram', 'Pillow', 'python-instagram', 'requests']
 )
