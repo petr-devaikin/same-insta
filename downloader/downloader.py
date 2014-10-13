@@ -9,15 +9,18 @@ class Downloader(object):
     def grab_images(self, user_id):
         all_media = []
         max_id = None
-        while True:
-            recent_media, next_ = self._api.user_recent_media(user_id=user_id, max_id=max_id, count=100)
-            if recent_media:
-                all_media += recent_media
-                new_max_id = recent_media[-1].id
-                if new_max_id != max_id:
-                    max_id = new_max_id
+        try:
+            while True:
+                recent_media, next_ = self._api.user_recent_media(user_id=user_id, max_id=max_id, count=100)
+                if recent_media:
+                    all_media += recent_media
+                    new_max_id = recent_media[-1].id
+                    if new_max_id != max_id:
+                        max_id = new_max_id
+                    else:
+                        break
                 else:
                     break
-            else:
-                break
+        except InstagramAPIError: pass
+        
         return all_media
