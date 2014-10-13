@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, url_for, redirect, session
 from downloader.downloader import Downloader
-import requests, os
+import requests, os, urllib, cStringIO
 from instagram import client
+from perception.advanced import SimplePerception
+from PIL import Image
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('default_settings')
@@ -21,9 +23,16 @@ def index(user_id=None):
     if not access_token:
         return redirect(url_for('.login'))
 
+    p = SimplePerception(8, 8)
     d = Downloader(access_token=access_token)
     media = d.grab_images(user_id) #48217801
-    return ''.join(['<img src="{0}" />'.format(m) for m in media])
+    #for m in media[:10]:
+    #    f = cStringIO.StringIO(urllib.urlopen(m.images['thumbnail'].url).read())
+    #    img = Image.open(f)
+    #    m.hash = p.get_hash(img)
+        
+    return ''.join(['<img src="{0}" />'.format(m.images['thumbnail'].url) for m in media])
+    #return ''.join(['<img src="{0}" />{1}<br/>'.format(m.images['thumbnail'].url, m.hash) for m in media[0:10]])
 
 @app.route('/login')
 def login():

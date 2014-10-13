@@ -2,18 +2,19 @@ from PIL import Image
 from .image_hash import ImageHash
 
 class BasePerception(object):
+    _ResultClass = ImageHash
+
     def __init__(self, width, height):
         self.width = width
         self.height = height
 
     def _convert_pixel(self, pixel):
-        return pixel[0]
+        return pixel[0] / 255.0
 
     def _get_converter(self, line):
         return lambda pixel: self._convert_pixel(pixel)
 
-    def get_hash(self, image_path):
-        image = Image.open(image_path)
+    def get_hash(self, image):
         small_image = image.resize((self.width, self.height), Image.ANTIALIAS)
         line = [small_image.getpixel((x, y)) for x in range(self.width) for y in range(self.height)]
-        return ImageHash(map(self._get_converter(line), line))
+        return self._ResultClass(map(self._get_converter(line), line))

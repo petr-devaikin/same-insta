@@ -20,4 +20,4 @@ class Downloader(object):
                     break
             else:
                 break
-        return [media.images['thumbnail'].url for media in all_media]
+        return all_media
