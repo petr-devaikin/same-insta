@@ -77,9 +77,9 @@ def faces():
         return redirect(url_for('.login'))
 
     d = Downloader(access_token=access_token)
-    my_images = d.grab_images(None)
+    my_images = d.grab_images(1437893966)[0:20]
     for m in my_images:
-        m.faces = get_faces(m.images['thumbnail'].url)
+        m.faces = get_faces(m.get_standard_resolution_url())
 
     return ''.join(['<img src="{0}" />{1}<br/>'.format(m.images['thumbnail'].url, len(m.faces)) for m in my_images])
 

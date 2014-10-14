@@ -12,8 +12,8 @@ def get_faces(url):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(
         gray,
-        scaleFactor=1.1,
-        minNeighbors=5,
+        scaleFactor=1.2,
+        minNeighbors=2,
         minSize=(30, 30),
         flags = cv2.cv.CV_HAAR_SCALE_IMAGE
     )
