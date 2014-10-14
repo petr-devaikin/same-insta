@@ -4,7 +4,7 @@ import requests, os, urllib2, io
 from instagram import client
 from perception.advanced import SimplePerception
 from PIL import Image
-import cv2
+from faces import get_faces
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('default_settings')
@@ -33,7 +33,7 @@ def index(user_id=None):
     access_token = session.get('access_token')
     if not access_token:
         return redirect(url_for('.login'))
-
+    
     d = Downloader(access_token=access_token)
 
     insta_client = client.InstagramAPI(access_token=access_token)
@@ -72,7 +72,17 @@ def index(user_id=None):
 
 @app.route('/faces')
 def faces():
-    
+    access_token = session.get('access_token')
+    if not access_token:
+        return redirect(url_for('.login'))
+
+    d = Downloader(access_token=access_token)
+    my_images = d.grab_images(None)
+    for m in my_images:
+        m.faces = get_faces(m.images['thumbnail'].url)
+
+    return ''.join(['<img src="{0}" />{1}<br/>'.format(m.images['thumbnail'].url, len(m.faces)) for m in my_images])
+
 
 @app.route('/login')
 def login():
@@ -85,7 +95,7 @@ def insta_code():
     try:
         access_token, user_info = get_unauthenticated_api().exchange_code_for_access_token(code)
         session['access_token'] = access_token
-        return redirect(url_for('.index'))
+        return redirect(url_for('faces'))
     except Exception as e:
         print e
         return 'error'
