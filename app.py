@@ -4,6 +4,7 @@ import requests, os, urllib2, io
 from instagram import client
 from perception.advanced import SimplePerception
 from PIL import Image
+import cv2
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('default_settings')
@@ -68,6 +69,10 @@ def index(user_id=None):
 
     #return ''.join(['<img src="{0}" />'.format(m.images['thumbnail'].url) for m in media])
     #return ''.join(['<img src="{0}" />{1}<br/>'.format(m.images['thumbnail'].url, m.hash) for m in media[0:10]])
+
+@app.route('/faces')
+def faces():
+    
 
 @app.route('/login')
 def login():

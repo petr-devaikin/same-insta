@@ -6,11 +6,13 @@ class Downloader(object):
     def __init__(self, **kwargs):
         self._api = InstagramAPI(**kwargs)
 
-    def grab_images(self, user_id):
+    def grab_images(self, user_id, limit=1000):
         all_media = []
         max_id = None
         try:
-            while True:
+            i = 0
+            while i < limit:
+                i += 1
                 recent_media, next_ = self._api.user_recent_media(user_id=user_id, max_id=max_id, count=100)
                 if recent_media:
                     all_media += recent_media
@@ -22,5 +24,5 @@ class Downloader(object):
                 else:
                     break
         except InstagramAPIError: pass
-        
+
         return all_media
