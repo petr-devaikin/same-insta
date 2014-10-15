@@ -14,10 +14,12 @@ app.secret_key = os.urandom(24)
 
 simple_perception = SimplePerception(8, 8)
 
-def get_unauthenticated_api():
+
+def get_unauthenticated_api(**kwargs):
     return client.InstagramAPI(client_id=app.config['INSTA_ID'],
                                client_secret=app.config['INSTA_SECRET'],
-                               redirect_uri=url_for('.insta_code', _external=True))
+                               redirect_uri=url_for('insta_code', _external=True, **kwargs))
+
 
 def calc_hash(media, perception):
     for m in media:
@@ -27,90 +29,66 @@ def calc_hash(media, perception):
         m.hash = perception.get_hash(img)
 
 
-@app.route('/')
-@app.route('/<int:user_id>')
-def index(user_id=None):
+@app.route('/tag/<tag>')
+def tags(tag):
     access_token = session.get('access_token')
-    if not access_token:
-        return redirect(url_for('.login'))
-    
-    d = Downloader(access_token=access_token)
+    if not access_token: return redirect(url_for('login', ret=request.url))
 
-    insta_client = client.InstagramAPI(access_token=access_token)
-    
-    followers, next_ = insta_client.user_followed_by(user_id=user_id)
-    while next_:
-        next_followers, next_ = insta_client.user_followed_by(with_next_url=next_)
-        followers += next_followers
+    return render_template('tags.html', tag=tag)
 
-    my_images = d.grab_images(user_id)
-    calc_hash(my_images, simple_perception)
-
-    res = []
-
-    for f in followers:
-        f_images = d.grab_images(f.id)
-        calc_hash(f_images, simple_perception)
-        for m1 in my_images:
-            for m2 in f_images:
-                if m1.hash * m2.hash >= 0.95:
-                    res.append((m1, m2))
-    
-    return render_template('index.html', result=result)
-
-    #return str(len([f.id for f in followers]))
-
-    #media = d.grab_images(user_id) #48217801
-    #for m in media[:10]:
-    #    f = cStringIO.StringIO(urllib.urlopen(m.images['thumbnail'].url).read())
-    #    img = Image.open(f)
-    #    m.hash = p.get_hash(img)
-        
-
-    #return ''.join(['<img src="{0}" />'.format(m.images['thumbnail'].url) for m in media])
-    #return ''.join(['<img src="{0}" />{1}<br/>'.format(m.images['thumbnail'].url, m.hash) for m in media[0:10]])
 
 @app.route('/faces')
 def faces():
     access_token = session.get('access_token')
-    if not access_token:
-        return redirect(url_for('login'))
+    if not access_token: return redirect(url_for('login', ret=request.url))
 
-    return render_template('index.html')
+    return render_template('faces.html')
+
 
 @app.route('/next_images')
 def next_images():
     access_token = session.get('access_token')
-    if not access_token:
-        return jsonify(error=true)
-    else:
-        d = Downloader(access_token=access_token)
-        last_id = request.args.get('img_id')
-        media = d.grab_next_images(None, last_id, 10)
-        result = []
-        last_id = media[-1].id if media else ''
-        for m in media:
-            if (m.type == 'image'):
-                faces = get_faces(m.get_thumbnail_url())
-                if len(faces) > 0:
-                    result.append({ 
-                        'id': m.id,
-                        'img': m.get_thumbnail_url(), 
-                        'faces': [(int(x), int(y), int(w), int(h)) for (x, y, w, h) in faces] })
-        return jsonify(result=result, last_id=last_id)
+    if not access_token: return jsonify(error='session expired')
+
+    insta = client.InstagramAPI(access_token=access_token)
+
+    tag = request.args.get('tag')
+    params = { 'count': app.config['IMAGES_PER_REQUEST'] }
+
+    if request.args.get('next'):
+        params['with_next_url'] = request.args.get('next')
+    elif tag:
+        params['tag_name'] = tag
+
+    media, next_ = insta.tag_recent_media(**params) if tag else insta.user_recent_media(**params)
+
+    result = []
+    for m in media:
+        faces = get_faces(m.get_thumbnail_url())
+        if len(faces) > 0:
+            result.append({
+                'link': m.link, 
+                'img': m.get_thumbnail_url(),
+                'faces': [(int(x), int(y), int(w), int(h)) for (x, y, w, h) in faces]
+            })
+
+    return jsonify(images=result, next_url=next_)
+
+
 
 @app.route('/login')
 def login():
-    return redirect(get_unauthenticated_api().get_authorize_url())
+    return redirect(get_unauthenticated_api(ret=request.args.get('ret')).get_authorize_url())
 
 
 @app.route('/insta_code')
 def insta_code():
     code = request.args.get('code')
+    return_url = request.args.get('ret')
     try:
-        access_token, user_info = get_unauthenticated_api().exchange_code_for_access_token(code)
+        access_token, user_info = get_unauthenticated_api(ret=return_url).exchange_code_for_access_token(code)
         session['access_token'] = access_token
-        return redirect(url_for('faces'))
+        return redirect(return_url)
     except Exception as e:
         print e
         return 'error'

@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+    </head>
+    <body>
+        <div id="images"></div>
+
+        <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        <script>
+            var next_images_url = "{{ url_for('next_images') }}";
+            var tag = '';
+        </script>
+    </body>
+</html>

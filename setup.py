@@ -10,5 +10,6 @@ setup(
     include_package_data=True,
     zip_safe=False,
     setup_requires=['Flask'],
-    install_requires=['Flask', 'python-instagram', 'Pillow', 'python-instagram', 'requests', 'numpy']
+    install_requires=['Flask', 'Flask-Script', 'python-instagram', 'Pillow',
+        'python-instagram', 'requests', 'numpy']
 )

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask.ext.script import Manager
-from web.app import app
+from app import app
 
 manager = Manager(app)
 
