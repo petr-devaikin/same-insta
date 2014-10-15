@@ -19,6 +19,18 @@ def get_faces(url):
     )
     return faces
 
+def get_faces_from_file(image_path):
+    image = cv2.imread(image_path)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(
+        gray,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(10, 10),
+        flags = cv2.cv.CV_HAAR_SCALE_IMAGE
+    )
+    return faces
+
 def simple_perception(folder):
     for f in sorted(os.listdir(folder)):
         image_path = os.path.join(folder, f)

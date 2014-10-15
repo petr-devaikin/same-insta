@@ -4,7 +4,7 @@ import requests, os, urllib2, io
 from instagram import client
 from perception.advanced import SimplePerception
 from PIL import Image
-from faces import get_faces
+from faces import get_faces, get_faces_from_file
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('default_settings')
@@ -56,7 +56,7 @@ def index(user_id=None):
                 if m1.hash * m2.hash >= 0.95:
                     res.append((m1, m2))
     
-    return ''.join(['<img src="{0}" /><img src="{1}" /><br/>'.format(r[0].images['thumbnail'].url, r[1].images['thumbnail'].url) for r in res])
+    return render_template('index.html', result=result)
 
     #return str(len([f.id for f in followers]))
 
@@ -74,14 +74,17 @@ def index(user_id=None):
 def faces():
     access_token = session.get('access_token')
     if not access_token:
-        return redirect(url_for('.login'))
+        return redirect(url_for('login'))
 
     d = Downloader(access_token=access_token)
-    my_images = d.grab_images(1437893966)[0:20]
+    my_images = d.grab_images(None)
+    result = []
     for m in my_images:
-        m.faces = get_faces(m.get_standard_resolution_url())
+        if m.type != 'video':
+            faces = get_faces(m.get_thumbnail_url())
+            result.append([m.get_thumbnail_url(), faces])
 
-    return ''.join(['<img src="{0}" />{1}<br/>'.format(m.images['thumbnail'].url, len(m.faces)) for m in my_images])
+    return render_template('index.html', result=result)
 
 
 @app.route('/login')
@@ -101,4 +104,4 @@ def insta_code():
         return 'error'
 
 if __name__ == '__main__':
-    app.run()
+    app.run(threaded=True)
