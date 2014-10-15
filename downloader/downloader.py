@@ -26,3 +26,7 @@ class Downloader(object):
         except InstagramAPIError: pass
 
         return all_media
+
+    def grab_next_images(self, user_id, last_img_id, count):
+        recent_media, next_ = self._api.user_recent_media(user_id=user_id, max_id=last_img_id, count=count)
+        return recent_media

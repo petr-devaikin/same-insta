@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect, session
+from flask import Flask, render_template, request, url_for, redirect, session, jsonify
 from downloader.downloader import Downloader
 import requests, os, urllib2, io
 from instagram import client
@@ -76,16 +76,28 @@ def faces():
     if not access_token:
         return redirect(url_for('login'))
 
-    d = Downloader(access_token=access_token)
-    my_images = d.grab_images(None)
-    result = []
-    for m in my_images:
-        if m.type != 'video':
-            faces = get_faces(m.get_thumbnail_url())
-            result.append([m.get_thumbnail_url(), faces])
+    return render_template('index.html')
 
-    return render_template('index.html', result=result)
-
+@app.route('/next_images')
+def next_images():
+    access_token = session.get('access_token')
+    if not access_token:
+        return jsonify(error=true)
+    else:
+        d = Downloader(access_token=access_token)
+        last_id = request.args.get('img_id')
+        media = d.grab_next_images(None, last_id, 10)
+        result = []
+        last_id = media[-1].id if media else ''
+        for m in media:
+            if (m.type == 'image'):
+                faces = get_faces(m.get_thumbnail_url())
+                if len(faces) > 0:
+                    result.append({ 
+                        'id': m.id,
+                        'img': m.get_thumbnail_url(), 
+                        'faces': [(int(x), int(y), int(w), int(h)) for (x, y, w, h) in faces] })
+        return jsonify(result=result, last_id=last_id)
 
 @app.route('/login')
 def login():
