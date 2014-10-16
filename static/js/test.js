@@ -127,8 +127,12 @@ function processImage(image) {
     prepareBackCanvas(image);
 
     var animator = new Animator();
-    var of = opacityFrame(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 0.1);
-    animator.addEvent(1000, of);
+    var of1 = linealAnimation(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 1000);
+    var of2 = linealAnimation(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 3000);
+    var of3 = linealAnimation(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 500);
+    animator.addEvent(1000, of1);
+    animator.addEvent(1000, of2);
+    animator.addEvent(1000, of3);
 
     animator.start();
 }

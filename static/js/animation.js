@@ -9,26 +9,21 @@ window.requestAnimFrame = (function(callback) {
         };
 })();
 
-function extend(Child, Parent) {
-    var F = function() { }
-    F.prototype = Parent.prototype;
-    Child.prototype = new F();
-    Child.prototype.constructor = Child;
-    Child.superclass = Parent.prototype;
-}
-
 
 function Animator() {
-    this._scale = [];
-    this._cursor = new AnimationCursor();
+    this._events = [];
+    this._live;
 
-    this.addEvent = function(time, drawFrame) {
-        this._scale.push([time, drawFrame]);
+    this.addEvent = function(time, animation) {
+        var i = 0;
+        while (i < this._events.length && this._events[i].time < time)
+            i++;
+        this._events.splice(i, 0, { time: time, animation: animation });
     }
 
     this.start = function() {
-        this._scale.sort(function (a, b) { return a[0] - b[0]} );
         this._startTime = (new Date()).getTime();
+        this._live = [];
         this._animate();
     }
 
@@ -36,19 +31,24 @@ function Animator() {
     this._animate = function() {
         var currentTime = (new Date()).getTime() - this._startTime;
 
-        while (currentTime > this._scale[this._cursor.position][0]) {
-            var drawFrame = this._scale[this._cursor.position][1];
-            if (nextTime = drawFrame())
-                this.addEvent(nextTime + currentTime, drawFrame);
-
-            this._cursor.position++;
-            if (this._cursor.position >= this._scale.length)
-                break;
+        while (this._events.length && currentTime > this._events[0].time) {
+            var e = this._events.shift();
+            e.animation(e.time);
+            this._live.push(e.animation);
         }
 
-        if (this._cursor.position < this._scale.length)
-            requestAnimFrame(function(animation) {
-                return function() { animation._animate(); }
+        var toRemove = [];
+        for (var a in this._live) {
+            if (!this._live[a](currentTime))
+                toRemove.push(a)
+        }
+
+        for (var i in toRemove)
+            this._live.splice([toRemove[i]], 1);
+
+        if (this._live.length || this._events.length)
+            requestAnimFrame(function(animator) {
+                return function() { animator._animate(); }
             }(this));
         else
             console.log('Animation stopped');
@@ -56,22 +56,21 @@ function Animator() {
 }
 
 
-function AnimationCursor() {
-    this.position = 0;
-}
 
+function linealAnimation(callback, start, stop, period) {
+    var value = start,
+        startTime = undefined;
 
+    return function(globalTime) {
+        if (startTime == undefined)
+            startTime = globalTime;
 
-function opacityFrame(callback, start, stop, step) {
-    var opacity = start;
+        value = start + (globalTime - startTime) * (stop - start) / period;
+        if ((stop - start) * (stop - value) < 0)
+            value = stop;
 
-    return function() {
-        if (opacity > stop) {
-            callback(opacity);
-            opacity -= step;
-            return 200;
-        }
-        else
-            return false;
+        callback(value);
+
+        return value != stop;
     }
 }
