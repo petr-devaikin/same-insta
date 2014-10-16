@@ -41,28 +41,41 @@ function makeImageGrey(context, rect) {
 }
 
 
-function lightning(image, opacity) {
+var background;
+
+function setNewBackground() {
     var backSrc = backCanvas.toDataURL();
     var greyImg = new Image();
     greyImg.onload = function() {
-        baseContext.drawImage(image, 0, 0);
+        baseContext.putImageData(background, 0, 0);
 
         baseContext.save();
 
         baseContext.beginPath();
-        baseContext.moveTo(Math.random() * baseCanvas.width, 0);
-        baseContext.lineTo(Math.random() * baseCanvas.width, baseCanvas.height);
+        baseContext.moveTo(0.5 * baseCanvas.width, 0);
+        baseContext.lineTo(0.5 * baseCanvas.width, baseCanvas.height);
         baseContext.lineTo(baseCanvas.width, baseCanvas.height);
         baseContext.lineTo(baseCanvas.width, 0);
         baseContext.clip();
 
-        baseContext.globalAlpha = opacity;
         baseContext.drawImage(this, 0, 0);
-        baseContext.globalAlpha = 1;
 
         baseContext.restore();
+
+        background = baseContext.getImageData(0, 0, baseCanvas.width, baseCanvas.height);
     };
     greyImg.src = backSrc;
+}
+
+
+function glowing(background, opacity) {
+    baseContext.putImageData(background, 0, 0);
+    baseContext.beginPath();
+    baseContext.globalAlpha = opacity;
+    baseContext.rect(0.5 * baseCanvas.width, 0, 0.5 * baseCanvas.width, baseCanvas.height);
+    baseContext.fillStyle = 'white';
+    baseContext.fill();
+    baseContext.globalAlpha = 1;
 }
 
 
@@ -119,20 +132,18 @@ function lightning(image, opacity) {
 */
 
 function processImage(image) {
-    var canvas = document.getElementById('myCanvas');
-    var context = canvas.getContext('2d');
-
-    context.drawImage(image, 0, 0);
+    baseContext.drawImage(image, 0, 0);
 
     prepareBackCanvas(image);
+    background = baseContext.getImageData(0, 0, baseCanvas.width, baseCanvas.height);
 
     var animator = new Animator();
-    var of1 = linealAnimation(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 1000);
-    var of2 = linealAnimation(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 3000);
-    var of3 = linealAnimation(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 500);
-    animator.addEvent(1000, of1);
-    animator.addEvent(1000, of2);
-    animator.addEvent(1000, of3);
+    var la1 = linealAnimation(function (opacity) { glowing(background, opacity); }, 0, 1, 1000);
+    var oma = oneMomentAnimation(setNewBackground);
+    var la2 = linealAnimation(function (opacity) { glowing(background, opacity); }, 1, 0, 3000);
+    animator.addEvent(1000, la1);
+    animator.addEvent(2000, oma);
+    animator.addEvent(2000, la2);
 
     animator.start();
 }

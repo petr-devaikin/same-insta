@@ -16,7 +16,7 @@ function Animator() {
 
     this.addEvent = function(time, animation) {
         var i = 0;
-        while (i < this._events.length && this._events[i].time < time)
+        while (i < this._events.length && this._events[i].time <= time)
             i++;
         this._events.splice(i, 0, { time: time, animation: animation });
     }
@@ -43,7 +43,7 @@ function Animator() {
                 toRemove.push(a)
         }
 
-        for (var i in toRemove)
+        for (var i in toRemove.reverse())
             this._live.splice([toRemove[i]], 1);
 
         if (this._live.length || this._events.length)
@@ -55,6 +55,13 @@ function Animator() {
     }
 }
 
+
+function oneMomentAnimation(callback) {
+    return function(globalTime) {
+        callback();
+        return false;
+    }
+}
 
 
 function linealAnimation(callback, start, stop, period) {
