@@ -126,11 +126,9 @@ function processImage(image) {
 
     prepareBackCanvas(image);
 
-    var animation = new Animation();
-    animation.addEvent(1000, function () { lightning(imageObj, Math.random()); });
-    animation.addEvent(2000, function () { lightning(imageObj, Math.random()); });
-    animation.addEvent(3000, function () { lightning(imageObj, Math.random()); });
-    animation.addEvent(4000, function () { lightning(imageObj, Math.random()); });
+    var animator = new Animator();
+    var of = new OpacityFragment(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 0.1);
+    animator.addEvent(1000, of);
 
-    animation.start();
+    animator.start();
 }
