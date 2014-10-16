@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+    </head>
+    <body>
+        <canvas id="myCanvas" width="640" height="640"></canvas>
+        <canvas id="backCanvas" width="640" height="640" style="display: none;"></canvas>
+
+        <script src="{{ url_for('static', filename='js/animation.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/test.js') }}"></script>
+        <script>
+            loadCanvas("{{ url_for('static', filename='test.jpg') }}");
+        </script>
+    </body>
+</html>

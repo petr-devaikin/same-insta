@@ -4,7 +4,7 @@ import requests, os, urllib2, io
 from instagram import client
 from perception.advanced import SimplePerception
 from PIL import Image
-from faces import get_faces, get_faces_from_file
+from recognition.faces import get_faces, get_faces_from_file
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('default_settings')
@@ -74,6 +74,9 @@ def next_images():
 
     return jsonify(images=result, next_url=next_)
 
+@app.route('/test')
+def test():
+    return render_template('test.html')
 
 
 @app.route('/login')
