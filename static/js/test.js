@@ -127,7 +127,7 @@ function processImage(image) {
     prepareBackCanvas(image);
 
     var animator = new Animator();
-    var of = new OpacityFragment(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 0.1);
+    var of = opacityFrame(function (opacity) { lightning(imageObj, opacity); }, 1, 0, 0.1);
     animator.addEvent(1000, of);
 
     animator.start();

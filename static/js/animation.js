@@ -18,12 +18,12 @@ function extend(Child, Parent) {
 }
 
 
-var Animator = function() {
+function Animator() {
     this._scale = [];
     this._cursor = new AnimationCursor();
 
-    this.addEvent = function(time, fragment) {
-        this._scale.push([time, fragment]);
+    this.addEvent = function(time, drawFrame) {
+        this._scale.push([time, drawFrame]);
     }
 
     this.start = function() {
@@ -37,8 +37,10 @@ var Animator = function() {
         var currentTime = (new Date()).getTime() - this._startTime;
 
         while (currentTime > this._scale[this._cursor.position][0]) {
-            console.log(this._scale[this._cursor.position][1]);
-            this._scale[this._cursor.position][1].perform(this, currentTime);
+            var drawFrame = this._scale[this._cursor.position][1];
+            if (nextTime = drawFrame())
+                this.addEvent(nextTime + currentTime, drawFrame);
+
             this._cursor.position++;
             if (this._cursor.position >= this._scale.length)
                 break;
@@ -54,36 +56,22 @@ var Animator = function() {
 }
 
 
-var AnimationCursor = function() {
+function AnimationCursor() {
     this.position = 0;
 }
 
 
-var AnimationFragment = function() {
-    this._nextTime = undefined;
-    this._doAction = function(globalTime) { }
 
-    this.perform = function(animator, globalTime) {
-        this._doAction(globalTime);
-        if (this._nextTime) {
-            console.log('added');
-            animator.addEvent(this._nextTime, this)
-        }
-    }
-}
+function opacityFrame(callback, start, stop, step) {
+    var opacity = start;
 
-
-var OpacityFragment = function(callback, start, stop, step) {
-    this._opacity = start;
-
-    this._doAction = function(globalTime) {
-        if (this._opacity > stop) {
-            callback(this._opacity);
-            this._nextTime = globalTime + 200;
-            this._opacity -= step;
+    return function() {
+        if (opacity > stop) {
+            callback(opacity);
+            opacity -= step;
+            return 200;
         }
         else
-            this._nextTime = undefined;
+            return false;
     }
 }
-OpacityFragment.prototype = new AnimationFragment();
