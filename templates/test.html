@@ -1,15 +1,15 @@
 <!DOCTYPE HTML>
 <html>
     <head>
+        <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+
+        <script>
+            var img_src = "{{ url_for('static', filename='cat.jpg', _external=True) }}";
+        </script>
+        <script data-main="{{ url_for('static', filename='js/app') }}" src="{{ url_for('static', filename='js/require.js') }}"></script>
     </head>
     <body bgcolor="black">
         <canvas id="myCanvas" width="640" height="640"></canvas>
 
-        <script src="{{ url_for('static', filename='js/animation.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/pixelator.js') }}"></script>
-        <script>
-            var img_src = "{{ url_for('static', filename='test.jpg', _external=True) }}";
-        </script>
-        <script src="{{ url_for('static', filename='js/test.js') }}"></script>
     </body>
 </html>
