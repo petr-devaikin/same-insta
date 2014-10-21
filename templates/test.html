@@ -5,10 +5,12 @@
 
         <script>
             var img_src = "{{ url_for('static', filename='cat.jpg', _external=True) }}";
+            var next_img_src = "{{ url_for('static', filename='bear.jpg', _external=True) }}";
         </script>
         <script data-main="{{ url_for('static', filename='js/app') }}" src="{{ url_for('static', filename='js/require.js') }}"></script>
     </head>
     <body bgcolor="black">
+        <canvas id="tempCanvas" width="640" height="640" style="display: none;"></canvas>
         <canvas id="myCanvas" width="640" height="640"></canvas>
 
     </body>

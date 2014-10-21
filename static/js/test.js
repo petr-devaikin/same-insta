@@ -3,20 +3,35 @@ define(['pixelator', 'animation'], function (pixelator, animation) {
 
     var pix;
 
-    function init(imageObject) {
+    var images = ['/static/01.jpg',
+                  '/static/02.jpg',
+                  '/static/03.jpg',
+                  '/static/04.jpg',
+                  '/static/05.jpg',
+                  '/static/06.jpg'];
+
+    function init() {
         var canvas = document.getElementById("myCanvas");
         canvas.setAttribute('width', window.innerWidth);
         canvas.setAttribute('height', window.innerHeight);
-        pix = new pixelator.Pixelator(document.getElementById("myCanvas"));
-        pix.loadImage(img_src, animate);
+        var tempCanvas = document.getElementById("tempCanvas");
+
+        canvas.onclick = function() {
+            var src = images.shift();
+            images.push(src);
+            pix.loadNextImage(src, animate);
+        }
+
+        pix = new pixelator.Pixelator(canvas, tempCanvas);
+        pix.loadImage(img_src, function () { pix.drawPixels(); });
     }
 
     function animate() {
-        pix.drawPixels();
-        pix.centredBomb(3, { x: 40, y: 60, width: 60, height: 60 });
+        pix.centredBomb(3, { x: 20 + Math.random() * 70, y: 20 + Math.random() * 70,
+            width: 60, height: 60 });
 
         var animator = new animation.Animator();
-        animator.addEvent(1000, pix.animation);
+        animator.addEvent(0, pix.animation);
         animator.start();
     }
 });
