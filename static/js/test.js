@@ -1,14 +1,16 @@
 define(['pixelator', 'animation'], function (pixelator, animation) {
-    init();
-
-    var pix;
-
     var images = ['/static/01.jpg',
                   '/static/02.jpg',
                   '/static/03.jpg',
                   '/static/04.jpg',
                   '/static/05.jpg',
                   '/static/06.jpg'];
+
+    var pix;
+
+    init();
+
+
 
     function init() {
         var canvas = document.getElementById("myCanvas");
@@ -23,7 +25,7 @@ define(['pixelator', 'animation'], function (pixelator, animation) {
         }
 
         pix = new pixelator.Pixelator(canvas, tempCanvas);
-        pix.loadImage(img_src, function () { pix.drawPixels(); });
+        pix.loadImage(images[images.length - 1], function () { pix.drawPixels(); });
     }
 
     function animate() {
