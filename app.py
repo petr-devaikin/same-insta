@@ -79,6 +79,14 @@ def test():
     return render_template('test.html')
 
 
+@app.route('/next_img')
+def next_img():
+    cursor = int(request.args.get('cursor', 0))
+    next_cursor = cursor % 6 + 1
+
+    return jsonify(src=url_for('static', filename='img/0'+str(next_cursor)+'.jpg'), cursor=next_cursor)
+
+
 @app.route('/login')
 def login():
     return redirect(get_unauthenticated_api(ret=request.args.get('ret')).get_authorize_url())

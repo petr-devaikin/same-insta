@@ -1,16 +1,18 @@
-define(['pixelator', 'animation'], function (pixelator, animation) {
-    var images = ['/static/01.jpg',
-                  '/static/02.jpg',
-                  '/static/03.jpg',
-                  '/static/04.jpg',
-                  '/static/05.jpg',
-                  '/static/06.jpg'];
-
+define(['jquery', 'pixelator', 'animation'], function ($, pixelator, animation) {
     var pix;
+
+    var cursor = 1;
 
     init();
 
-
+    function loadNextImage() {
+        $.getJSON('/next_img', { cursor: cursor })
+            .success(function (res) {
+                pix.loadNextImage(res['src'], animate);
+                cursor = res['cursor'];
+                setTimeout(loadNextImage, 3000);
+            });
+    }
 
     function init() {
         var canvas = document.getElementById("myCanvas");
@@ -18,14 +20,14 @@ define(['pixelator', 'animation'], function (pixelator, animation) {
         canvas.setAttribute('height', window.innerHeight);
         var tempCanvas = document.getElementById("tempCanvas");
 
-        canvas.onclick = function() {
-            var src = images.shift();
-            images.push(src);
-            pix.loadNextImage(src, animate);
-        }
-
         pix = new pixelator.Pixelator(canvas, tempCanvas);
-        pix.loadImage(images[images.length - 1], function () { pix.drawPixels(); });
+
+        $.getJSON('/next_img', { cursor: cursor })
+            .success(function (res) {
+                pix.loadImage(res['src'], function () { pix.drawPixels(); });
+                cursor = res['cursor'];
+                setTimeout(loadNextImage, 1000);
+            });
     }
 
     function animate() {
