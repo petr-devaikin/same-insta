@@ -5,6 +5,7 @@ from instagram import client
 from perception.advanced import SimplePerception
 from PIL import Image
 from recognition.faces import get_faces, get_faces_from_file
+import base64
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object('default_settings')
@@ -29,50 +30,18 @@ def calc_hash(media, perception):
         m.hash = perception.get_hash(img)
 
 
+@app.before_request
+def check_auth():
+    if not session.get('access_token') and request.path not in ['/login', '/insta_code']:
+        return redirect(url_for('login', ret=request.url))
+
+
 @app.route('/tag/<tag>')
 def tags(tag):
     access_token = session.get('access_token')
     if not access_token: return redirect(url_for('login', ret=request.url))
 
     return render_template('tags.html', tag=tag)
-
-
-@app.route('/faces')
-def faces():
-    access_token = session.get('access_token')
-    if not access_token: return redirect(url_for('login', ret=request.url))
-
-    return render_template('faces.html')
-
-
-@app.route('/next_images')
-def next_images():
-    access_token = session.get('access_token')
-    if not access_token: return jsonify(error='session expired')
-
-    insta = client.InstagramAPI(access_token=access_token)
-
-    tag = request.args.get('tag')
-    params = { 'count': app.config['IMAGES_PER_REQUEST'] }
-
-    if request.args.get('next'):
-        params['with_next_url'] = request.args.get('next')
-    elif tag:
-        params['tag_name'] = tag
-
-    media, next_ = insta.tag_recent_media(**params) if tag else insta.user_recent_media(**params)
-
-    result = []
-    for m in media:
-        faces = get_faces(m.get_thumbnail_url())
-        if len(faces) > 0:
-            result.append({
-                'link': m.link, 
-                'img': m.get_thumbnail_url(),
-                'faces': [(int(x), int(y), int(w), int(h)) for (x, y, w, h) in faces]
-            })
-
-    return jsonify(images=result, next_url=next_)
 
 @app.route('/test')
 def test():
@@ -81,10 +50,37 @@ def test():
 
 @app.route('/next_img')
 def next_img():
-    cursor = int(request.args.get('cursor', 0))
-    next_cursor = cursor % 6 + 1
+    cursor = request.args.get('cursor')
+    
+    params = { }
+    params['count'] = app.config['IMAGES_PER_REQUEST']
 
-    return jsonify(src=url_for('static', filename='img/0'+str(next_cursor)+'.jpg'), cursor=next_cursor)
+    tag = 'car'
+
+    insta = client.InstagramAPI(access_token=session.get('access_token'))
+
+    if request.args.get('cursor'):
+        params['with_next_url'] = request.args.get('cursor')
+    if tag:
+        params['tag_name'] = tag
+
+    while True:
+        media, next_ = insta.tag_recent_media(**params) if tag else insta.user_recent_media(**params)
+        if not media:
+            break # finished
+        for m in media:
+            faces = get_faces(m.get_thumbnail_url())
+            if len(faces) > 0:
+                break
+        else:
+            params['with_next_url'] = next_
+            continue
+        break
+
+    f = urllib2.urlopen(m.get_thumbnail_url()).read()
+
+    return jsonify(src=base64.b64encode(f), cursor=next_,
+        rect={ 'x': int(faces[0][0]), 'y': int(faces[0][1]), 'width': int(faces[0][2]), 'height': int(faces[0][3]) })
 
 
 @app.route('/login')

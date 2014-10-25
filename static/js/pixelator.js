@@ -9,16 +9,16 @@ define(['pixel'], function (pixel) {
 
             this.pixels = [];
 
-            this.loadImage = function(img_src, callback) {
+            this.loadImage = function(img_src, callback, base64) {
                 image = new Image();
                 image.onload = function(pixelator) { return function() { pixelator.init(image, callback); } }(this);
-                image.src = img_src;
+                image.src = base64 === undefined ? img_src : "data:image/jpeg;base64," + img_src;
             }
 
-            this.loadNextImage = function(img_src, callback) {
+            this.loadNextImage = function(img_src, callback, base64) {
                 var nextImage = new Image();
                 nextImage.onload = function(pixelator) { return function() { pixelator.setNextImage(nextImage, callback); } }(this);
-                nextImage.src = img_src;
+                nextImage.src = base64 === undefined ? img_src : "data:image/jpeg;base64," + img_src;
             }
 
             this.init = function(image, callback) {
