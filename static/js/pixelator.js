@@ -71,9 +71,16 @@ define(['pixel'], function (pixel) {
 
                     if (pixel.position.x > stableRect.x && pixel.position.x < stableRect.x + stableRect.width &&
                         pixel.position.y > stableRect.y && pixel.position.y < stableRect.y + stableRect.height) {
-                        speed = dist * 1.75 / Math.sqrt(dist * dist + 150*150) + Math.random() / 1000;
-                        var angle = Math.atan2(dY, dX);// + Math.random() * Math.PI / 70;
-                        axelerationPower = 0.001 * dist / Math.sqrt(dist * dist + 70 * 70);
+                        speed = dist * 1.75 / Math.sqrt(dist * dist + 40000) + Math.random() / 1000;
+                        var dXStable = pixel.position.x - stableRect.x - stableRect.width / 2;
+                        var dYStable = pixel.position.y - stableRect.y - stableRect.height / 2;
+                        var stableDist = dXStable * dXStable + dYStable * dYStable;
+                        stableDist /= stableRect.width * stableRect.width;
+                        stableDist *= stableDist * stableDist;
+                        speed += (Math.random() - 0.5) * stableDist;
+                        var angle = Math.atan2(dY, dX);
+                        angle += (Math.random() - 0.5) * Math.PI / 70 * stableDist;
+                        axelerationPower = 0.0009 * dist / Math.sqrt(dist * dist + 70 * 70);
                         if (axelerationPower == 0) axelerationPower = 0.1;
                     }
                     else {

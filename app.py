@@ -55,7 +55,7 @@ def next_img():
     params = { }
     params['count'] = app.config['IMAGES_PER_REQUEST']
 
-    tag = 'car'
+    tag = 'selfie'
 
     insta = client.InstagramAPI(access_token=session.get('access_token'))
 
